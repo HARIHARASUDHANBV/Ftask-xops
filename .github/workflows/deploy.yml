@@ -1,0 +1,59 @@
+name: Deploy static page to EC2
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # avoid interactive host key prompt
+          echo "${{ secrets.EC2_PUBLIC_IP }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA" >> ~/.ssh/known_hosts || true
+
+      - name: Copy index.html to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no ./index.html \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.EC2_PUBLIC_IP }}:/tmp/index.html
+
+      - name: Install web server and publish file
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.EC2_PUBLIC_IP }} <<'SSH'
+            set -e
+            # Detect distro family
+            if command -v apt >/dev/null 2>&1; then
+              sudo apt-get update -y
+              # prefer nginx; fallback to apache2
+              if ! dpkg -s nginx >/dev/null 2>&1; then
+                sudo apt-get install -y nginx || sudo apt-get install -y apache2
+              fi
+              # ensure service running
+              sudo systemctl enable --now nginx || sudo systemctl enable --now apache2
+              WEBROOT="/var/www/html"
+            else
+              # Amazon Linux / RHEL family
+              sudo yum -y install nginx || sudo yum -y install httpd
+              sudo systemctl enable --now nginx || sudo systemctl enable --now httpd
+              WEBROOT="/usr/share/nginx/html"
+              # On Amazon Linux with httpd, root is /var/www/html
+              if systemctl is-active --quiet httpd; then WEBROOT="/var/www/html"; fi
+            fi
+            sudo mkdir -p "$WEBROOT"
+            sudo mv /tmp/index.html "$WEBROOT/index.html"
+            sudo chown root:root "$WEBROOT/index.html"
+            sudo chmod 0644 "$WEBROOT/index.html"
+            # restart whichever server is active
+            sudo systemctl restart nginx || sudo systemctl restart apache2 || sudo systemctl restart httpd
+          SSH
+
+      - name: Done
+        run: echo "Deployed to http://${{ secrets.EC2_PUBLIC_IP }}"
