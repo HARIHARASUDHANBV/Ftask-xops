@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XOps is Awesome!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            animation: glow 2s infinite alternate;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            border-bottom: 3px solid #6e8efb;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.5rem;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #6e8efb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px #6e8efb;
+            }
+            to {
+                box-shadow: 0 0 20px #6e8efb, 0 0 30px #a777e3;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XOps</h1>
+        <p>is awesome!</p>
+        <button onclick="changeMessage()">Click Me!</button>
+    </div>
+
+    <script>
+        // Initial animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            container.style.opacity = 0;
+            setTimeout(() => {
+                container.style.transition = 'opacity 1s ease';
+                container.style.opacity = 1;
+            }, 300);
+        });
+
+        // Change message on button click
+        function changeMessage() {
+            const p = document.querySelector('p');
+            const messages = [
+                "is amazing!",
+                "is fantastic!",
+                "rules the world!",
+                "is changing the game!"
+            ];
+            p.textContent = "is awesome!";
+            
+            setTimeout(() => {
+                p.style.transition = 'color 1s ease';
+                p.style.color = '#ff5252';
+                setTimeout(() => {
+                    p.textContent = messages[Math.floor(Math.random() * messages.length)];
+                    p.style.color = '#555';
+                }, 500);
+            }, 500);
+        }
+
+        // Random color gradient animation
+        setInterval(() => {
+            const colors = [
+                'linear-gradient(135deg, #6e8efb, #a777e3)',
+                'linear-gradient(135deg, #00f260, #0575e6)',
+                'linear-gradient(135deg, #ff9966, #ff5e62)',
+                'linear-gradient(135deg, #a1c4fd, #c2e9fb)'
+            ];
+            document.body.style.background = colors[Math.floor(Math.random() * colors.length)];
+        }, 5000);
+    </script>
+</body>
+</html>
